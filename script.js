@@ -170,7 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
       salesData = [];
       transactionHistory = transactionHistory.filter(t => t.type !== 'Venta');
       updateSalesTable();
-      updateTransactionHistory();
       updateSummary();
       saveToLocalStorage();
       showAlert('🗑️ Ventas eliminadas correctamente', 'warning');
