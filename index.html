@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Ventas</title>
+    <link rel="icon" href="gestion.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+
+   <header class="mb-8 flex flex-col items-center justify-center pt-6">
+        <img src="logo.png" alt="Logo" class="w-15 h-auto mb-4">
+        <h1 class="text-3xl font-bold text-blue-700">Gestión de ventas</h1>
+    </header>
+
+
+    <div class="container mx-auto px-4">
+        <div class="mt-4 flex flex-wrap gap-4">
+            <div class="bg-white p-4 rounded-lg flex-1 min-w-[250px]">
+                <h3 class="text-gray-500 font-medium">Ventas Hoy</h3>
+                <p class="text-2xl font-bold" id="daily-sales-total">$0.00</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg flex-1 min-w-[200px]">
+                <h3 class="text-gray-500 font-medium">Productos Vendidos</h3>
+                <p class="text-2xl font-bold" id="total-products-sold">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg flex-1 min-w-[250px]">
+                <h3 class="text-gray-500 font-medium">Reembolsos</h3>
+                <p class="text-2xl font-bold" id="total-refunds">0</p>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[32%_66%] gap-6">
+            <div class="space-y-6">
+                <div class="bg-white rounded-lg p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Registrar Venta</h2>
+                    <form id="sales-form" class="space-y-4">
+                        <div>
+                            <label for="product-name" class="block text-sm font-medium text-gray-700">Nombre del Producto</label>
+                            <input type="text" id="product-name" required class="input-field">
+                        </div>
+                        <div>
+                            <label for="payment-method" class="block text-sm font-medium text-gray-700">Método de pago</label>
+                            <select id="payment-method" class="input-field">
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Transferencia">Transferencia</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="unit-price" class="block text-sm font-medium text-gray-700">Valor Unitario</label>
+                            <input type="text" id="unit-price" required class="input-field">
+                        </div>
+                        <div>
+                            <label for="quantity" class="block text-sm font-medium text-gray-700">Cantidad</label>
+                            <input type="number" id="quantity" min="1" value="1" required class="input-field">
+                        </div>
+                        <div class="flex space-x-4">
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-plus-circle mr-2"></i> Agregar
+                            </button>                    
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-lg p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Registrar Gasto</h2>
+                    <form id="expenses-form" class="space-y-4">
+                        <div>
+                            <label for="expense-description" class="block text-sm font-medium text-gray-700">Descripción del gasto</label>
+                            <input type="text" id="expense-description" class="input-field" required>
+                        </div>
+                        <div>
+                            <label for="expense-amount" class="block text-sm font-medium text-gray-700">Valor del gasto</label>
+                            <input type="number" id="expense-amount" class="input-field" min="0" required>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button type="submit" class="btn-secondary">
+                                <i class="fas fa-minus-circle mr-2"></i> Registrar Gasto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-white rounded-lg overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-blue-700">Registro de Ventas</h2>
+                        <div class="flex items-center space-x-2">
+                            <button id="clear-sales" class="btn-danger text-sm">
+                                <i class="fas fa-trash-alt mr-1"></i> Limpiar Ventas
+                            </button>
+                            <div class="relative">
+                                <input type="text" id="search-sales" placeholder="Buscar..." class="pl-8 pr-4 py-1 border rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                <i class="fas fa-search absolute left-2 top-2 text-gray-400"></i>
+                            </div>
+                            <button id="export-excel-btn" class="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition" title="Exportar Excel">
+                                <i class="fas fa-file-excel"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="th">Producto</th>
+                                    <th class="th">Método pago</th>
+                                    <th class="th">Precio</th>
+                                    <th class="th">Cantidad</th>
+                                    <th class="th">Total</th>
+                                    <th class="th">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sales-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                            <tfoot class="bg-gray-50 font-semibold">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-3 text-right">Total del Día:</td>
+                                    <td id="daily-total" class="px-6 py-3">$0.00</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-blue-700">Historial de Transacciones</h2>
+                        <button id="clear-history-btn" class="btn-danger text-sm">
+                            <i class="fas fa-trash-alt mr-1"></i> Limpiar Historial
+                        </button>
+                    </div>
+                    <div class="bg-white">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="th">Fecha</th>
+                                    <th class="th">Tipo</th>
+                                    <th class="th">Producto</th>
+                                    <th class="th">Cantidad</th>
+                                    <th class="th">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="alert-container" class="fixed bottom-4 right-4 space-y-2 z-50"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
